@@ -1,603 +1,206 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>机器码激活码生成器</title>
-    <style>
-      :root {
-        --bg: #0a0d14;
-        --card: rgba(17, 24, 39, 0.92);
-        --line: rgba(255, 255, 255, 0.1);
-        --text: #f8fafc;
-        --muted: rgba(248, 250, 252, 0.68);
-        --accent: #22c55e;
-        --accent-2: #16a34a;
-        --danger: #f87171;
-      }
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XYQ VIDEO V5.0 一机一码生成器</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 24px;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    background: linear-gradient(90deg, #f472b6, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .desc {
+    color: #9ca3af;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .group {
+    background: #0b1220;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cbd5e1;
+    font-size: 14px;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #020617;
+    color: #f8fafc;
+    font-size: 15px;
+    outline: none;
+    margin-bottom: 12px;
+  }
+  .btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  button {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .primary {
+    background: #3b82f6;
+    color: #ffffff;
+  }
+  .secondary {
+    background: #334155;
+    color: #e2e8f0;
+  }
+  .result {
+    margin-top: 14px;
+    background: #020617;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.7;
+    color: #f8fafc;
+  }
+  .ok { color: #4ade80; font-weight: bold; }
+  .bad { color: #f87171; }
+  .mono {
+    font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>XYQ VIDEO V5.0 离线激活码生成器</h1>
+      <div class="desc">
+        本生成器采用 <b>HMAC-SHA256</b> 硬件绑定技术，生成的卡密仅限指定机器使用。
+      </div>
 
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        min-height: 100vh;
-        padding: 24px 16px 40px;
-        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-        color: var(--text);
-        background:
-          radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), transparent 28%),
-          radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.14), transparent 30%),
-          var(--bg);
-      }
-
-      .wrap {
-        width: min(100%, 560px);
-        margin: 0 auto;
-      }
-
-      .card {
-        padding: 22px 18px;
-        border: 1px solid var(--line);
-        border-radius: 22px;
-        background: var(--card);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
-      }
-
-      .badge {
-        display: inline-flex;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #86efac;
-        font-size: 12px;
-        letter-spacing: 0.08em;
-      }
-
-      h1 {
-        margin: 14px 0 8px;
-        font-size: 28px;
-        line-height: 1.2;
-      }
-
-      p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.7;
-        font-size: 14px;
-      }
-
-      .field {
-        margin-top: 18px;
-      }
-
-      .label {
-        margin-bottom: 8px;
-        font-size: 13px;
-        color: var(--muted);
-      }
-
-      input,
-      textarea {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: rgba(0, 0, 0, 0.24);
-        color: var(--text);
-        padding: 14px 15px;
-        font-size: 15px;
-        outline: none;
-      }
-
-      textarea {
-        resize: vertical;
-        min-height: 88px;
-      }
-
-      input:focus,
-      textarea:focus {
-        border-color: rgba(34, 197, 94, 0.78);
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.14);
-      }
-
-      .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 18px;
-      }
-
-      button {
-        border: none;
-        border-radius: 14px;
-        padding: 13px 14px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .primary {
-        color: white;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      }
-
-      .secondary {
-        color: white;
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .result {
-        margin-top: 18px;
-        padding: 14px 15px;
-        border-radius: 16px;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .result .label {
-        margin-bottom: 10px;
-      }
-
-      .code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 18px;
-        line-height: 1.6;
-        word-break: break-all;
-      }
-
-      .status {
-        margin-top: 12px;
-        min-height: 20px;
-        font-size: 13px;
-      }
-
-      .status.error {
-        color: var(--danger);
-      }
-
-      .tips {
-        margin-top: 16px;
-        padding: 12px 14px;
-        border-radius: 14px;
-        border: 1px dashed rgba(255, 255, 255, 0.14);
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.7;
-      }
-
-      .sub-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 10px;
-      }
-
-      .history {
-        margin-top: 18px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .history-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 14px;
-        border-bottom: 1px solid var(--line);
-        font-size: 13px;
-        color: var(--muted);
-      }
-
-      .history-list {
-        max-height: 260px;
-        overflow: auto;
-      }
-
-      .history-empty {
-        padding: 16px 14px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .history-item {
-        padding: 12px 14px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      .history-item:first-child {
-        border-top: none;
-      }
-
-      .history-machine,
-      .history-code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        word-break: break-all;
-      }
-
-      .history-machine {
-        font-size: 12px;
-        color: var(--muted);
-      }
-
-      .history-code {
-        margin-top: 6px;
-        font-size: 15px;
-      }
-
-      .history-meta {
-        margin-top: 8px;
-        font-size: 12px;
-        color: var(--muted);
-      }
-
-      .scan-panel {
-        margin-top: 18px;
-        padding: 14px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .scan-panel video {
-        width: 100%;
-        margin-top: 12px;
-        border-radius: 14px;
-        background: black;
-        display: none;
-      }
-
-      .scan-row {
-        display: flex;
-        gap: 10px;
-        margin-top: 12px;
-      }
-
-      .scan-row button,
-      .scan-row label {
-        flex: 1;
-      }
-
-      .scan-row label {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 14px;
-        padding: 13px 14px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .scan-row input {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <div class="card">
-        <div class="badge">MOBILE GENERATOR</div>
-        <h1>机器码激活码生成器</h1>
-        <p>把软件里显示的机器码贴进来，点一下就能生成对应激活码。这个页面是纯前端版，手机浏览器也能直接用。</p>
-
-        <div class="field">
-          <div class="label">机器码</div>
-          <textarea id="machineId" placeholder="粘贴软件里显示的机器码"></textarea>
+      <div class="group">
+        <label for="macInput">机器码 (从 V5.0 界面复制)</label>
+        <input id="macInput" placeholder="例如：DC5B9FA6-E8547655-594360DB-C7FBF099" />
+        
+        <div class="btns">
+          <button class="primary" onclick="generateKey()">生成 V5.0 专用永久卡密</button>
+          <button class="secondary" onclick="copyGenerated()">复制卡密</button>
         </div>
-
-        <div class="actions">
-          <button class="primary" id="generateBtn">生成激活码</button>
-          <button class="secondary" id="copyBtn">复制结果</button>
-        </div>
-
-        <div class="sub-actions">
-          <button class="secondary" id="shareBtn">系统分享</button>
-          <button class="secondary" id="fillMasterBtn">填入万能码</button>
-        </div>
-
-        <div class="result">
-          <div class="label">激活码</div>
-          <div class="code" id="resultCode">等待生成</div>
-        </div>
-
-        <div class="status" id="statusText"></div>
-
-        <div class="scan-panel">
-          <div class="label">扫码识别机器码</div>
-          <p>如果你把机器码做成了二维码，这里可以直接调用手机摄像头扫码填入。</p>
-          <div class="scan-row">
-            <button class="secondary" id="startScanBtn">打开摄像头扫码</button>
-            <label for="imagePicker">从图片识别
-              <input id="imagePicker" type="file" accept="image/*" />
-            </label>
-          </div>
-          <video id="scannerVideo" playsinline></video>
-        </div>
-
-        <div class="history">
-          <div class="history-head">
-            <span>最近生成记录</span>
-            <button class="secondary" id="clearHistoryBtn">清空</button>
-          </div>
-          <div class="history-list" id="historyList"></div>
-        </div>
-
-        <div class="tips">
-          当前算法和软件里机器绑定逻辑一致。<br />
-          如果你想保留万能码，软件里仍然支持：<strong>ONE-BREATH-FOREVER</strong>
-        </div>
+        <div class="result mono" id="generateResult">等待输入...</div>
       </div>
     </div>
+  </div>
 
-    <script>
-      const PRODUCT_NAME = "jimeng-pro-electron";
-      const LICENSE_SECRET = "jimeng-pro-electron::one-breath::machine-license-v1";
+<script>
+  const LICENSE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const LICENSE_SECRET = "Seedance2.0|V5-LICENSE|2026|Dreamina-USA";
 
-      const machineIdInput = document.getElementById("machineId");
-      const resultCode = document.getElementById("resultCode");
-      const statusText = document.getElementById("statusText");
-      const generateBtn = document.getElementById("generateBtn");
-      const copyBtn = document.getElementById("copyBtn");
-      const shareBtn = document.getElementById("shareBtn");
-      const fillMasterBtn = document.getElementById("fillMasterBtn");
-      const startScanBtn = document.getElementById("startScanBtn");
-      const imagePicker = document.getElementById("imagePicker");
-      const scannerVideo = document.getElementById("scannerVideo");
-      const historyList = document.getElementById("historyList");
-      const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-      const MASTER_CODE = "ONE-BREATH-FOREVER";
-      const HISTORY_KEY = "machine_license_history_v1";
-      let activeStream = null;
-      let scanTimer = null;
+  async function hmacSha256(key, message) {
+    const enc = new TextEncoder();
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw", enc.encode(key),
+      { name: "HMAC", hash: "SHA-256" },
+      false, ["sign"]
+    );
+    const signature = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(message));
+    return new Uint8Array(signature);
+  }
 
-      function setStatus(message, type) {
-        statusText.textContent = message || "";
-        statusText.className = "status" + (type ? ` ${type}` : "");
+  function base32Encode(bytes) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; // Standard Base32
+    let bits = "";
+    for (const b of bytes) bits += b.toString(2).padStart(8, "0");
+    let output = "";
+    for (let i = 0; i < bits.length; i += 5) {
+        let chunk = bits.slice(i, i + 5).padEnd(5, "0");
+        output += alphabet[parseInt(chunk, 2)];
+    }
+    return output;
+  }
+
+  async function getChecksumChar(text) {
+    const msgUint8 = new TextEncoder().encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const digest = new Uint8Array(hashBuffer);
+    const val = (digest[0] << 8) | digest[1];
+    return LICENSE_ALPHABET[val % LICENSE_ALPHABET.length];
+  }
+
+  async function generateKey() {
+    const mac = document.getElementById("macInput").value.trim().replace(/[^0-9A-F]/gi, "").toUpperCase();
+    const box = document.getElementById("generateResult");
+
+    if (!mac) {
+      box.innerHTML = '<span class="bad">× 请输入有效的机器码</span>';
+      return;
+    }
+
+    try {
+      const prefix = "SD5";
+      const lType = "P";
+      const payload = `${prefix}|${mac}|${lType}`;
+      const digest = await hmacSha256(LICENSE_SECRET, payload);
+      
+      // Base32 编码并过滤
+      const encoded = base32Encode(digest);
+      let body = "";
+      for (const ch of encoded) {
+          if (LICENSE_ALPHABET.includes(ch)) body += ch;
+          if (body.length === 20) break;
       }
+      while (body.length < 20) body += "X";
+      
+      const keyNoChecksum = `${prefix}${lType}${body}`;
+      const checksum = await getChecksumChar(keyNoChecksum);
+      const fullKey = keyNoChecksum + checksum;
+      
+      // 格式化输出
+      const formatted = `${prefix}-${lType}-${body.match(/.{1,5}/g).join("-")}-${checksum}`;
+      
+      box.innerHTML = `<span class="ok">生成成功！</span>\n卡密: <b style="color:#60a5fa">${formatted}</b>\n说明: 该卡密已与机器码 ${mac} 绑定。`;
+    } catch (err) {
+      box.innerHTML = `<span class="bad">× 错误: ${err.message}</span>`;
+    }
+  }
 
-      function bytesToHex(bytes) {
-        return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-      }
-
-      function formatCode(raw) {
-        return raw.match(/.{1,4}/g)?.join("-") || raw;
-      }
-
-      function readHistory() {
-        try {
-          return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-        } catch {
-          return [];
-        }
-      }
-
-      function writeHistory(items) {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 20)));
-      }
-
-      function renderHistory() {
-        const items = readHistory();
-        if (!items.length) {
-          historyList.innerHTML = '<div class="history-empty">还没有生成记录。</div>';
-          return;
-        }
-
-        historyList.innerHTML = items
-          .map(
-            (item) => `
-              <div class="history-item">
-                <div class="history-machine">${item.machineId}</div>
-                <div class="history-code">${item.code}</div>
-                <div class="history-meta">${item.time}</div>
-              </div>
-            `
-          )
-          .join("");
-      }
-
-      function saveHistory(machineId, code) {
-        const items = readHistory();
-        items.unshift({
-          machineId,
-          code,
-          time: new Date().toLocaleString(),
-        });
-        writeHistory(items);
-        renderHistory();
-      }
-
-      async function hmacSha256(message, secret) {
-        const encoder = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          "raw",
-          encoder.encode(secret),
-          { name: "HMAC", hash: "SHA-256" },
-          false,
-          ["sign"]
-        );
-        const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
-        return bytesToHex(new Uint8Array(signature));
-      }
-
-      async function generateCode() {
-        const machineId = machineIdInput.value.trim();
-        if (!machineId) {
-          setStatus("先输入机器码。", "error");
-          resultCode.textContent = "等待生成";
-          return;
-        }
-
-        try {
-          const digest = await hmacSha256(`${PRODUCT_NAME}:${machineId}`, LICENSE_SECRET);
-          const code = formatCode(digest.slice(0, 20).toUpperCase());
-          resultCode.textContent = code;
-          saveHistory(machineId, code);
-          setStatus("激活码已生成。", "");
-        } catch (error) {
-          resultCode.textContent = "生成失败";
-          setStatus(`生成失败：${error.message || error}`, "error");
-        }
-      }
-
-      async function copyResult() {
-        const text = resultCode.textContent.trim();
-        if (!text || text === "等待生成" || text === "生成失败") {
-          setStatus("当前没有可复制的激活码。", "error");
-          return;
-        }
-
-        try {
-          await navigator.clipboard.writeText(text);
-          setStatus("激活码已复制。", "");
-        } catch (error) {
-          setStatus("复制失败，请手动长按复制。", "error");
-        }
-      }
-
-      async function shareResult() {
-        const text = resultCode.textContent.trim();
-        if (!text || text === "等待生成" || text === "生成失败") {
-          setStatus("先生成激活码再分享。", "error");
-          return;
-        }
-
-        if (!navigator.share) {
-          setStatus("当前浏览器不支持系统分享。", "error");
-          return;
-        }
-
-        try {
-          await navigator.share({
-            title: "机器码激活码",
-            text,
-          });
-          setStatus("已调用系统分享。", "");
-        } catch {
-          setStatus("已取消分享。", "");
-        }
-      }
-
-      function fillMasterCode() {
-        resultCode.textContent = MASTER_CODE;
-        setStatus("万能码已填入。", "");
-      }
-
-      function stopScanner() {
-        if (scanTimer) {
-          clearInterval(scanTimer);
-          scanTimer = null;
-        }
-        if (activeStream) {
-          activeStream.getTracks().forEach((track) => track.stop());
-          activeStream = null;
-        }
-        scannerVideo.style.display = "none";
-      }
-
-      async function detectFromSource(source) {
-        if (!("BarcodeDetector" in window)) {
-          throw new Error("当前浏览器不支持二维码识别");
-        }
-        const detector = new BarcodeDetector({ formats: ["qr_code"] });
-        const results = await detector.detect(source);
-        return results[0]?.rawValue || "";
-      }
-
-      async function startScanner() {
-        if (!("BarcodeDetector" in window)) {
-          setStatus("当前浏览器不支持扫码识别，请改用图片识别或手动粘贴。", "error");
-          return;
-        }
-
-        try {
-          stopScanner();
-          activeStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-          });
-          scannerVideo.srcObject = activeStream;
-          scannerVideo.style.display = "block";
-          await scannerVideo.play();
-          setStatus("摄像头已开启，请把二维码对准画面。", "");
-
-          scanTimer = setInterval(async () => {
-            try {
-              const value = await detectFromSource(scannerVideo);
-              if (value) {
-                machineIdInput.value = value.trim();
-                stopScanner();
-                setStatus("扫码成功，机器码已填入。", "");
-              }
-            } catch {}
-          }, 700);
-        } catch (error) {
-          setStatus(`打开摄像头失败：${error.message || error}`, "error");
-        }
-      }
-
-      async function detectFromImage(file) {
-        if (!file) {
-          return;
-        }
-        if (!("BarcodeDetector" in window)) {
-          setStatus("当前浏览器不支持图片扫码识别。", "error");
-          return;
-        }
-
-        const image = new Image();
-        const url = URL.createObjectURL(file);
-
-        image.onload = async () => {
-          try {
-            const value = await detectFromSource(image);
-            if (!value) {
-              setStatus("没识别到二维码内容。", "error");
-            } else {
-              machineIdInput.value = value.trim();
-              setStatus("图片识别成功，机器码已填入。", "");
-            }
-          } catch (error) {
-            setStatus(`图片识别失败：${error.message || error}`, "error");
-          } finally {
-            URL.revokeObjectURL(url);
-          }
-        };
-
-        image.onerror = () => {
-          URL.revokeObjectURL(url);
-          setStatus("图片读取失败。", "error");
-        };
-
-        image.src = url;
-      }
-
-      function clearHistory() {
-        writeHistory([]);
-        renderHistory();
-        setStatus("历史记录已清空。", "");
-      }
-
-      generateBtn.addEventListener("click", generateCode);
-      copyBtn.addEventListener("click", copyResult);
-      shareBtn.addEventListener("click", shareResult);
-      fillMasterBtn.addEventListener("click", fillMasterCode);
-      startScanBtn.addEventListener("click", startScanner);
-      imagePicker.addEventListener("change", (event) => {
-        detectFromImage(event.target.files?.[0]);
-        event.target.value = "";
-      });
-      clearHistoryBtn.addEventListener("click", clearHistory);
-      machineIdInput.addEventListener("keydown", (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-          generateCode();
-        }
-      });
-      window.addEventListener("beforeunload", stopScanner);
-      renderHistory();
-    </script>
-  </body>
+  function copyGenerated() {
+    const box = document.getElementById("generateResult");
+    const match = box.innerText.match(/卡密:\s*([A-Z0-9\-]+)/);
+    if (match) {
+        navigator.clipboard.writeText(match[1]);
+        alert("已复制到剪贴板");
+    }
+  }
+</script>
+</body>
 </html>
